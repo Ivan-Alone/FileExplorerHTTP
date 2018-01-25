@@ -283,7 +283,10 @@
 					exit;
 				}
 				validate2AuthFile($path);
-				echo '{"path":"'.$path.'","result":'.(@unlink($path)?'true':'false').',"status":"ok"}';
+				echo json_encode(array(
+					'path' => $path,
+					'status' => @unlink($path)?'ok':'Unexpected removing error'
+				));
 			}
 			break;
 			case 'rmdir': {
@@ -294,7 +297,10 @@
 					echo '{"path":"null","result":false,"status":"Error: path is empty!"}';
 					exit;
 				}
-				echo '{"path":"'.$path.'","result":'.(@rmdir($path)?'true':'false').',"status":"ok"}';
+				echo json_encode(array(
+					'path' => $path,
+					'status' => @rmdir($path)?'ok':'Unexpected removing error'
+				));
 			}
 			break;
 			case 'glob': {

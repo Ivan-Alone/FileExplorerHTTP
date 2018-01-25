@@ -485,8 +485,13 @@
 			return $this->serverAnswer;
 		}
 		
-		public function synchronize($dir_base='upload') {
-			echo 'Synchronisation started!'.PHP_EOL;
+		public function synchronize($dir_base=null) {
+			$sync_end = false;
+			if ($dir_base == null) {
+				echo 'Synchronisation started!'.PHP_EOL;
+				$dir_base='upload';		
+				$sync_end = true;	
+			}
 			foreach (glob($dir_base.'/*') as $writing) {
 				if (!is_dir($writing)) {
 					$path = substr($writing, strlen('upload/'));
@@ -495,7 +500,8 @@
 					$this->synchronize($writing);
 				}
 			}
-			echo 'Synchronisation finished!'.PHP_EOL;
+			if ($sync_end)
+				echo 'Synchronisation finished!'.PHP_EOL;
 		}
 	
 		public function upload($local_file, $remote_file) {
@@ -518,7 +524,7 @@
 				'path' => $filename
 			));
 
-			echo ($status['result'] ? 'Success!' : 'Failed!').PHP_EOL;
+			echo ($status['status'] == 'ok' ? 'Success!' : 'Failed! ('.$status['status'].')').PHP_EOL;
 		}
 	
 		public function rmdir($directory) {
@@ -527,7 +533,7 @@
 				'path' => $directory
 			));
 
-			echo ($status['result'] ? 'Success!' : 'Failed!').PHP_EOL;
+			echo ($status['status'] == 'ok' ? 'Success!' : 'Failed! ('.$status['status'].')').PHP_EOL;
 		}
 	
 		public function mkdir($directory) {
@@ -626,7 +632,7 @@
 			$curl = curl_init();
 			
 			curl_setopt($curl, CURLOPT_URL, $url);
-			curl_setopt($curl,CURLOPT_RETURNTRANSFER,1);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($curl, CURLOPT_POST, 1);
 			curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 			curl_setopt($curl, CURLOPT_POSTFIELDS, $post);
