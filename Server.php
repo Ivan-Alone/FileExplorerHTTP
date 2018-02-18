@@ -247,7 +247,11 @@
 					}
 				}
 				
-				echo '{"path":"'.$path.'","dir":"'.$dir.'","status":"'.(file_put_contents($path, $content)?'ok':'Unexpected error').'"}';
+				echo json_encode(array(
+					'path' => $path,
+					'dir' => $dir,
+					'status' => @file_put_contents($path, $content)?'ok':'Unexpected error'
+				));
 			}
 			break;
 			

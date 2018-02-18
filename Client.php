@@ -515,6 +515,7 @@
 				'path' => $remote_file,
 				'content' => base64_encode($data)
 			));
+			
 			echo ($status['status'] == 'ok' ? 'Success!' : 'Failed! ('.$status['status'].')').PHP_EOL;
 		}
 	
