@@ -1,12 +1,6 @@
 <?php 
 	new ConsoleFM();
 	
-	/*
-	//  $client = new FileExplorerClient('http://mc-playground.com/phpMyAdmin/filemanager.php');
-	//  $client = new FileExplorerClient('http://localhost/fm/index.php');
-	    $client = new FileExplorerClient('http://ivan-alone.tk/filemanager_34576879876754765.php');
-	*/
-	
 	class ConsoleFM {
 		
 		private $cd;
