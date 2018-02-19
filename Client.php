@@ -1,6 +1,12 @@
 <?php 
 	new ConsoleFM();
 	
+	/*
+	//  $client = new FileExplorerClient('http://mc-playground.com/phpMyAdmin/filemanager.php');
+	//  $client = new FileExplorerClient('http://localhost/fm/index.php');
+	    $client = new FileExplorerClient('http://ivan-alone.tk/filemanager_34576879876754765.php');
+	*/
+	
 	class ConsoleFM {
 		
 		private $cd;
@@ -76,6 +82,8 @@
 						echo '    -  ~   -  displays full home path (aliases: home) (ex. \'~\')'.PHP_EOL;
 						echo '    -  cls  -  crear screen (multiplatform, aliases: clear, reset, clr, clrscr) (ex. \'cls\')'.PHP_EOL;
 						echo PHP_EOL;
+						echo '    -  chmod   -  change access mode to folder/file (ex. \'chmod 777 file.php\')'.PHP_EOL;
+						echo PHP_EOL;
 						echo '    -  dir &$dir  -  get list of files in $dir (empty $dir equals currint directory) (ex. \'dir /usr/\')'.PHP_EOL;
 						echo '    -  file $filename  -  show information about file $filename on server (ex. \'file /bin/bash\')'.PHP_EOL;
 						echo PHP_EOL;
@@ -104,6 +112,16 @@
 					case 'clrscr': {
 						pclose(popen(PHP_OS == 'WINNT' ? 'cls' : 'reset', 'w'));
 						$noEOL = true;
+					}
+					break;
+					
+					case 'chmod': {
+						echo PHP_EOL;
+						if ($argc != 2) {
+							echo 'Error: wrong arguments (2 arguments expected, '.$argc.' passed)'.PHP_EOL;
+							break;
+						}
+						$client->chmod($args[0], $args[1]);
 					}
 					break;
 					
@@ -142,6 +160,24 @@
 						
 						echo '              '.$size_info['files'].' File(s)    '.$size_info['sizes'].' bytes'.PHP_EOL;
 						echo '              '.$size_info['dirs'].' Dir(s)'.PHP_EOL .PHP_EOL;
+					}
+					break;
+					
+					case 'php': {
+						echo PHP_EOL;
+						if ($argc < 1) {
+							echo 'Error: wrong arguments (1 and more arguments expected, '.$argc.' passed)'.PHP_EOL;
+							break;
+						}
+						
+						$script = str_replace('"', '\"', $args[0]);
+						$args[0] = '-';
+						
+						$arg = '';
+						foreach ($args as $id => $ar)
+							$arg .= '$argv['.$id.'] = \"'.$ar.'\"; ';
+						
+						print_r($client->exec('php -r "'.str_replace('$', '\$', $arg.$script).'"'));
 					}
 					break;
 					
@@ -263,7 +299,7 @@
 					
 					case 'sync': {
 						echo PHP_EOL;
-						$client->synchronize();
+						$client->synchronize(null,$this->getCD());
 					}
 					break;
 					
@@ -402,7 +438,7 @@
 		private $aliases;
 		
 		public function __construct(string $command) {
-			preg_match_all('/\"(.+)([^\\\\\"]\")/U', $command, $out);
+			preg_match_all('/\"(.+)([^\\\\]\")/U', $command, $out);
 			
 			$this->aliases = array();
 			$aliases_count = 0;
@@ -479,7 +515,17 @@
 			return $this->serverAnswer;
 		}
 		
-		public function synchronize($dir_base=null) {
+		public function chmod($mode, $file) {
+			echo 'Changing mod of '.$file.'...'.PHP_EOL;
+			$status = $this->access('chmod', array(
+				'path' => $file,
+				'mode' => $mode
+			));
+			
+			echo ($status['status'] == 'ok' ? 'Success!' : 'Failed! ('.$status['status'].')').PHP_EOL;
+		}
+		
+		public function synchronize($dir_base=null,$cd='.') {
 			$sync_end = false;
 			if ($dir_base == null) {
 				echo 'Synchronisation started!'.PHP_EOL;
@@ -489,9 +535,9 @@
 			foreach (glob($dir_base.'/*') as $writing) {
 				if (!is_dir($writing)) {
 					$path = substr($writing, strlen('upload/'));
-					$this->upload($writing, $path);
+					$this->upload($writing, $cd.'/'.$path);
 				} else {
-					$this->synchronize($writing);
+					$this->synchronize($writing,$cd);
 				}
 			}
 			if ($sync_end)

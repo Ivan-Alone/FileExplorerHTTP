@@ -261,6 +261,17 @@
 			}
 			break;
 			
+			case 'chmod': {
+				$path = $_POST['path'];
+				$mode = octdec($_POST['mode']);
+				echo json_encode(array(
+					'path' => $path,
+					'mode' => $mode,
+					'status' => @chmod($path, $mode)?'ok':'Unexpected error (or you doesn\'t have permissions!)'
+				));
+			}
+			break;
+			
 			case 'mkdir': {
 				checkAuth();
 				
@@ -366,12 +377,12 @@
 			case 'exec': {
 				checkAuth(false, 'root');
 				
-				$p = popen($_POST['command'], 'r');
+				exec($_POST['command'].' 2>&1', $out);
+				
 				echo json_encode(array(
-					'data' => fgets($p),
+					'data' => implode(PHP_EOL, $out),
 					'status' => 'ok'
 				));
-				pclose($p);
 			}
 			break;
 
