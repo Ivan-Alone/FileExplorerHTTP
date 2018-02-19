@@ -1,6 +1,7 @@
 <?php 
 	error_reporting('E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED');
 	
+	define('version', 0.2);
 	define ('__AUTH_INFO', 'auth.lcf');
 
 	function validateFile($path, $allow_dir = false) {
@@ -122,9 +123,10 @@
 			
 			$username = $_POST['user'];
 			$pass = $_POST['pass'];
+			preg_match_all('/Mozilla\/5\.0 \(FileExplorer\, Client\, ([0-9]+).([0-9]+)\)/U', $_SERVER['HTTP_USER_AGENT'], $out);
 			
 			foreach ($auth_info['stored_pwds'] as $user) {
-				if ($username == $user['username'] && _hash($pass, $user['salt']) == $user['hash']) {
+				if ($username == $user['username'] && _hash($pass, $user['salt']) == $user['hash'] && ($_GET['mode'] == 'filetransfer' ? (@$out[0][0] == null ? false : true) : true)) {
 					$session = generateAccessKey($_SERVER['REMOTE_ADDR'], $user['username'], $user['hash'], $user['salt']);
 					@setcookie('access_key', $session);
 					
@@ -204,16 +206,15 @@
 			case 'openConnection':
 			case 'testConnection': {
 				$session = authorize();
-				
+	
 				echo json_encode(array(
 					'connected' => true,
-					'version' => '0.0.2',
+					'version' => version,
 					'status' => 'ok',
 					'user' => @get_current_user(),
 					'os' => PHP_OS,
 					'need_auth' => file_exists(__AUTH_INFO),
 					'session' => $session
-					
 				));
 				exit;
 			}

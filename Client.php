@@ -492,6 +492,8 @@
 		private $need_auth;
 		private $session;
 		
+		const version = '0.2';
+		
 		public function __construct($server, $user=null, $password=null) {
 			$this->server = $server.'?mode=filetransfer&do=';
 			@mkdir('upload');
@@ -506,7 +508,7 @@
 				throw new Exception('Client doesn\'t connected to server');
 			}
 			
-			if (@$this->serverAnswer['version'] != '0.0.2') {
+			if (((float)@$this->serverAnswer['version']) > self::version) {
 				throw new Exception('Client version isn\'t acceptable by server');
 			}
 		}
@@ -669,7 +671,7 @@
 			$post_data['access_key'] = $this->session;
 			
 			$post = substr(self::toGetQuery($post_data), 0, -1);
-			$header = array('Accept:', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0', 'Accept: */*', 'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3', 'Connection: keep-alive');
+			$header = array('Accept:', 'User-Agent: Mozilla/5.0 (FileExplorer, Client, '.self::version.')', 'Accept: */*', 'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3', 'Connection: keep-alive');
 			$curl = curl_init();
 			
 			curl_setopt($curl, CURLOPT_URL, $url);
